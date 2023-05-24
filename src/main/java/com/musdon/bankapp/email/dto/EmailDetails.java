@@ -1,4 +1,4 @@
-package com.musdon.bankapp.email;
+package com.musdon.bankapp.email.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

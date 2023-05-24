@@ -1,6 +1,8 @@
 package com.musdon.bankapp.service;
 
 import com.musdon.bankapp.dto.*;
+import com.musdon.bankapp.email.dto.EmailDetails;
+import com.musdon.bankapp.email.service.EmailService;
 import com.musdon.bankapp.entity.User;
 import com.musdon.bankapp.repository.UserRepository;
 import com.musdon.bankapp.utils.ResponseUtils;
@@ -15,11 +17,13 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+    private final EmailService emailService;
 
-    public UserServiceImpl(UserRepository userRepository, TransactionService transactionService){
+    public UserServiceImpl(UserRepository userRepository, TransactionService transactionService, EmailService emailService){
         this.userRepository = userRepository;
         this.transactionService = transactionService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -60,6 +64,17 @@ public class UserServiceImpl implements UserService {
 
 
         User savedUser = userRepository.save(user);
+
+        String accountDetails = savedUser.getFirstName() + savedUser.getLastName()
+                + savedUser.getOtherName() + "\nAccount Number: " + savedUser.getAccountNumber();
+        //Send email alert
+        EmailDetails message = EmailDetails.builder()
+                .recipient(savedUser.getEmail())
+                .subject("ACCOUNT DETAILS")
+                .messageBody("Congratulations! Your account has been successfully created! Kindly find your details below: \n" + accountDetails)
+                .build();
+
+        emailService.sendSimpleEmail(message);
 
         return Response.builder()
                 .responseCode(ResponseUtils.SUCCESS)
